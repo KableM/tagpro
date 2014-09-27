@@ -269,7 +269,7 @@ tagpro.ready(function () {
         if (spinType == SpinType.OVERLAY) {
             rotateCanvas();
             var spinOverlay = $("#spinOverlay").get(0);
-            var p = (player.team == 1) ? 0 : 40;
+            var p = (player.team == 1) ? 0 : 1;
             context.drawImage(spinOverlay, 40 * p, 0, 40, 40, drawPos.x, drawPos.y, 40 / tagpro.zoom, 40 / tagpro.zoom);
         }
 
