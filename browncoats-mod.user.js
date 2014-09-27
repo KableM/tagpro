@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name       		Browncoat's TagPro Mod
-// @version    		1.0.0
+// @version    		1.0.1
 // @description  	Range of configurable mods for TagPro
 // @include			http://tagpro-*.koalabeast.com:*
 // @include			http://tangent.jukejuice.com:*
@@ -264,13 +264,21 @@ tagpro.ready(function () {
         var p = transformPosition(player);
         if (!player.dead && player.name && player.draw) {
             // Degrees
-            if (tagpro.zoom <= 1.5) {
-                context.drawImage(player.browncoatDegreeCache.canvas, p.x + 20 * (1 / tagpro.zoom), p.y - Math.round(8 * (1 / tagpro.zoom)));
+            if (tagpro.zoom <= 1.5 && player.browncoatDegreeCache) {
+                context.drawImage(
+                    player.browncoatDegreeCache.canvas,
+                    p.x + 20 * (1 / tagpro.zoom),
+                    p.y - Math.round(8 * (1 / tagpro.zoom))
+                );
             }
 
             // Name
-            if (tagpro.zoom <= 4) {
-                context.drawImage(player.browncoatCache.canvas, p.x + Math.round(18 * (1 / tagpro.zoom)), p.y - 20 * (1 / tagpro.zoom));
+            if (tagpro.zoom <= 4 && player.browncoatCache) {
+                context.drawImage(
+                    player.browncoatCache.canvas,
+                    p.x + Math.round(18 * (1 / tagpro.zoom)),
+                    p.y - 20 * (1 / tagpro.zoom)
+                );
             }
 
         }
