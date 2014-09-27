@@ -23,6 +23,12 @@ tagpro.ready(function () {
     if (tagpro.events.drawPlayer)
         return;
 
+    var SpinType = {
+        OFF: 0,
+        WHOLE_BALL: 1,
+        OVERLAY: 2
+    };
+
     // -------------- Options --------------
 
     // Ball drop shadows
@@ -37,8 +43,16 @@ tagpro.ready(function () {
     // Show flair in the center of balls and spin it
     var centerFlair = true;
 
-    // Spin the ball texture
-    var spinBalls = true;
+    /**
+     *  How to handle the ball spinning.
+     *   SpinType.OFF - no spinning
+     *   SpinType.WHOLE_BALL - spin the entire ball as it is on your texture pack
+     *   SpinType.OVERLAY - spin the specified overlay image url.
+     */
+    var spinType = SpinType.WHOLE_BALL;
+
+    // 80x40 image with red overlay on the left side and blue on the right
+    var spinOverlayUrl = "http://i.imgur.com/hjeRNWH.png";
 
     // set to 2 for twice the particles! Use at own risk
     var particleFactor = 1;
@@ -68,11 +82,16 @@ tagpro.ready(function () {
         bottomClip: 0
     };
 
-    var shine = document.createElement("img");
-    shine.src = ballShineUrl;
-    shine.id = "shine";
-    shine.className = "asset";
-    $("#assets").append(shine.outerHTML);
+    function addAsset(id, url) {
+        var asset = document.createElement("img");
+        asset.src = url;
+        asset.id = id;
+        asset.className = "asset";
+        $("#assets").append(asset.outerHTML);
+    }
+
+    addAsset("shine", ballShineUrl);
+    addAsset("spinOverlay", spinOverlayUrl);
 
     //  Our custom draw function.
     var superUiDraw = tagpro.ui.draw;
@@ -208,11 +227,14 @@ tagpro.ready(function () {
     function drawPlayer(player, context, drawPos, TILESIZE) {
         context.save();
 
-        // Spin
-        if (spinBalls) {
+        var rotateCanvas = function () {
             context.translate(drawPos.x + (TILESIZE / 2) * (1 / tagpro.zoom), drawPos.y + (TILESIZE / 2) * (1 / tagpro.zoom));
             context.rotate(player.angle);
             context.translate(-drawPos.x - (TILESIZE / 2) * (1 / tagpro.zoom), -drawPos.y - (TILESIZE / 2) * (1 / tagpro.zoom));
+        };
+
+        if (spinType == SpinType.WHOLE_BALL) {
+            rotateCanvas();
         }
 
         tagpro.tiles.drawWithZoom(context, player.team == 1 ? "redball" : "blueball", drawPos);
@@ -244,6 +266,13 @@ tagpro.ready(function () {
             context.stroke();
         }
 
+        if (spinType == SpinType.OVERLAY) {
+            rotateCanvas();
+            var spinOverlay = $("#spinOverlay").get(0);
+            var p = (player.team == 1) ? 0 : 40;
+            context.drawImage(spinOverlay, 40 * p, 0, 40, 40, drawPos.x, drawPos.y, 40 / tagpro.zoom, 40 / tagpro.zoom);
+        }
+
         context.restore();
 
         // Flair in default position
@@ -254,7 +283,7 @@ tagpro.ready(function () {
         //shine
         if (showBallShine) {
             var s = $("#shine").get(0);
-            context.drawImage(s, drawPos.x + 1, drawPos.y + 1);
+            context.drawImage(s, drawPos.x + 1, drawPos.y + 1, 40 / tagpro.zoom, 40 / tagpro.zoom);
         }
 
     }
@@ -380,64 +409,64 @@ tagpro.ready(function () {
         return Math.random() * (max - min) + min;
     }
 
-});
+    var Layer = {
+        UNDER_PLAYERS: 1,
+        OVER_PLAYERS: 2
+    };
 
-/**
- *
- * Particle class
- *
- * @constructor
- * @param x
- * @param y
- * @param radius
- * @param {String} rgb should be in the form "255, 255, 255"
- * @param lifeTime
- * @param [speed]
- * @param [alpha]
- * @param {int} [layer]
- */
-var Particle = function (x, y, radius, rgb, lifeTime, speed, alpha, layer) {
-    speed = speed || {x: 0, y: 0};
-    alpha = alpha || 1;
-    layer = layer || Layer.OVER_PLAYERS;
-    this.x = x;
-    this.y = y;
-    this.radius = radius;
-    this.rgb = rgb;
-    this.alpha = alpha;
-    this.initialAlpha = alpha;
-    this.remove = false;
-    this.lifeTime = lifeTime;
-    this.timer = 0;
-    this.speed = speed;
-    this.layer = layer;
-};
+    /**
+     *
+     * Particle class
+     *
+     * @constructor
+     * @param x
+     * @param y
+     * @param radius
+     * @param {String} rgb should be in the form "255, 255, 255"
+     * @param lifeTime
+     * @param [speed]
+     * @param [alpha]
+     * @param {int} [layer]
+     */
+    var Particle = function (x, y, radius, rgb, lifeTime, speed, alpha, layer) {
+        speed = speed || {x: 0, y: 0};
+        alpha = alpha || 1;
+        layer = layer || Layer.OVER_PLAYERS;
+        this.x = x;
+        this.y = y;
+        this.radius = radius;
+        this.rgb = rgb;
+        this.alpha = alpha;
+        this.initialAlpha = alpha;
+        this.remove = false;
+        this.lifeTime = lifeTime;
+        this.timer = 0;
+        this.speed = speed;
+        this.layer = layer;
+    };
 
-var Layer = {
-    UNDER_PLAYERS: 1,
-    OVER_PLAYERS: 2
-};
+    Particle.prototype.draw = function (context, offset, layer) {
+        if (!this.remove && this.layer == layer) {
+            this.x += this.speed.x;
+            this.y += this.speed.y;
+            context.save();
+            context.fillStyle = "rgba(" + this.rgb + ", " + this.alpha + ")";
+            context.beginPath();
+            context.arc(this.x + offset.x, this.y + offset.y, this.radius * (1 / tagpro.zoom), 0, Math.PI * 2, true);
+            context.closePath();
+            context.fill();
+            context.restore();
 
-Particle.prototype.draw = function (context, offset, layer) {
-    if (!this.remove && this.layer == layer) {
-        this.x += this.speed.x;
-        this.y += this.speed.y;
-        context.save();
-        context.fillStyle = "rgba(" + this.rgb + ", " + this.alpha + ")";
-        context.beginPath();
-        context.arc(this.x + offset.x, this.y + offset.y, this.radius * (1 / tagpro.zoom), 0, Math.PI * 2, true);
-        context.closePath();
-        context.fill();
-        context.restore();
-
-        this.timer += 1000 / 60;
-        this.alpha = (1 - (this.timer / this.lifeTime)) * this.initialAlpha;
-        if (this.alpha < 0.001 || this.timer >= this.lifeTime) {
-            this.remove = true;
+            this.timer += 1000 / 60;
+            this.alpha = (1 - (this.timer / this.lifeTime)) * this.initialAlpha;
+            if (this.alpha < 0.001 || this.timer >= this.lifeTime) {
+                this.remove = true;
+            }
         }
-    }
-};
+    };
 
-Particle.prototype.shouldBeRemoved = function () {
-    return this.remove;
-};
+    Particle.prototype.shouldBeRemoved = function () {
+        return this.remove;
+    };
+
+});
