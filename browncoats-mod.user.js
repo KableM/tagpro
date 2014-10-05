@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name       		Browncoat's TagPro Mod
-// @version    		1.1.1
+// @version    		1.1.2
 // @description  	Range of configurable mods for TagPro
 // @include			http://tagpro-*.koalabeast.com:*
 // @include			http://tangent.jukejuice.com:*
@@ -296,7 +296,7 @@ tagpro.ready(function () {
 
             // Flag
             if (player.flag) {
-                var flag = "bc_" + flagNames[player.flag + 1];
+                var flag = "bc_" + flagNames[player.flag - 1];
                 tagpro.tiles.drawWithZoom(context, flag, {
                     x: p.x + Math.round(13 * (1 / tagpro.zoom)),
                     y: p.y - Math.round(32 * (1 / tagpro.zoom))
