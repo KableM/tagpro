@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name       		Browncoat's TagPro Mod
-// @version    		1.1.0
+// @version    		1.1.1
 // @description  	Range of configurable mods for TagPro
 // @include			http://tagpro-*.koalabeast.com:*
 // @include			http://tangent.jukejuice.com:*
