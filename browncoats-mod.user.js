@@ -15,6 +15,7 @@
  * @namespace tagpro.viewPort
  * @namespace player.degree
  * @namespace player.dead
+ * @namespace player.flag
 */
 
 //  Main tagpro function
@@ -274,23 +275,34 @@ tagpro.ready(function () {
 
         context.restore();
 
-        // Flair in default position
-        if (!centerFlair && player.flair && tagpro.zoom <= 1) {
-            context.drawImage(e, player.flair.x * 16, player.flair.y * 16, 16, 16, drawPos.x + 12, drawPos.y - 17, 16, 16);
-        }
-
         //shine
         if (showBallShine) {
             var s = $("#shine").get(0);
             context.drawImage(s, drawPos.x + 1, drawPos.y + 1, 40 / tagpro.zoom, 40 / tagpro.zoom);
         }
 
+        // Flair in default position
+        if (!centerFlair && player.flair && tagpro.zoom <= 1) {
+            context.drawImage(e, player.flair.x * 16, player.flair.y * 16, 16, 16, drawPos.x + 12, drawPos.y - 17, 16, 16);
+        }
+
     }
 
-    // Username, flair and degrees
+    // Username, flags and degrees
+    var flagNames = ["redflag", "blueflag", "yellowflag"];
     function drawPlayerInfo(context, player) {
         var p = transformPosition(player);
-        if (!player.dead && player.name && player.draw) {
+        if (!player.dead && player.draw) {
+
+            // Flag
+            if (player.flag) {
+                var flag = "bc_" + flagNames[player.flag + 1];
+                tagpro.tiles.drawWithZoom(context, flag, {
+                    x: p.x + Math.round(13 * (1 / tagpro.zoom)),
+                    y: p.y - Math.round(32 * (1 / tagpro.zoom))
+                });
+            }
+
             // Degrees
             if (tagpro.zoom <= 1.5 && player.browncoatDegreeCache) {
                 context.drawImage(
@@ -301,7 +313,7 @@ tagpro.ready(function () {
             }
 
             // Name
-            if (tagpro.zoom <= 4 && player.browncoatCache) {
+            if (player.name && tagpro.zoom <= 4 && player.browncoatCache) {
                 context.drawImage(
                     player.browncoatCache.canvas,
                     p.x + Math.round(18 * (1 / tagpro.zoom)),
@@ -368,10 +380,14 @@ tagpro.ready(function () {
 
 
     // Don't draw the speed/grip icon over players unless particles are disabled
+    // Don't draw flags - done in drawPlayerInfo()
     var superDrawWithZoom = tagpro.tiles.drawWithZoom;
-    tagpro.tiles.drawWithZoom = function (e, t, n, r, i, s) {
-        if (!showParticles || t != "grip") {
-            superDrawWithZoom(e, t, n, r, i, s);
+    tagpro.tiles.drawWithZoom = function (context, type, position, r, i, s) {
+        if ((!showParticles || type != "grip") && type != "yellowflag" && type != "redflag" && type != "blueflag") {
+            if (type.substr(0, 3) == "bc_") {
+                type = type.substr(3, type.length);
+            }
+            superDrawWithZoom(context, type, position, r, i, s);
         }
     };
 
