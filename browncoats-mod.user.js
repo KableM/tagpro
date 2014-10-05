@@ -60,7 +60,6 @@ tagpro.ready(function () {
     // Show particles (who would disable this)
     var showParticles = true;
 
-
     // ------------ End Options ------------
 
     var particles = [];
@@ -314,7 +313,7 @@ tagpro.ready(function () {
     }
 
     // Add effects on bomb explosion
-    tagpro.socket.on("bomb", function (e) {
+    onSocketEvent("bomb", function (e) {
         // e = top left corner of tile
         for (var i = 0; i < 3; i++) {
 
@@ -341,7 +340,7 @@ tagpro.ready(function () {
     });
 
     // Add effects on player pop
-    tagpro.socket.on("splat", function (player) {
+    onSocketEvent("splat", function (player) {
         for (var i = 0; i < 30; i++) {
             var rgb = player.t == 1 ? "255, 0, 0" : "0, 0, 255";
             var speed = {
@@ -353,6 +352,16 @@ tagpro.ready(function () {
             addParticle(new Particle(x, y, 1, rgb, 300, speed));
         }
     });
+
+    function onSocketEvent(event, handler) {
+        tagpro.socket.on(event, function(param) {
+            try {
+                handler(param);
+            } catch (err) {
+                console.log("Browncoat's mod error handling event '" + event + "': " + err);
+            }
+        });
+    }
 
 
     // -------------------------- OVERRIDES --------------------------
