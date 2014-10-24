@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name       		Browncoat's TagPro Mod
-// @version    		1.1.2
+// @version    		1.1.3
 // @description  	Range of configurable mods for TagPro
 // @include			http://tagpro-*.koalabeast.com:*
 // @include			http://tangent.jukejuice.com:*
@@ -12,7 +12,7 @@
  * Define a few namespaces to prevent false IDE warnings
  * @namespace tagpro
  * @namespace tagpro.tiles
- * @namespace tagpro.viewPort
+ * @namespace tagpro.viewPortDiv
  * @namespace player.degree
  * @namespace player.dead
  * @namespace player.flag
@@ -112,10 +112,10 @@ tagpro.ready(function () {
             x: canvas.attr("width")/2,
             y: canvas.attr("height")/2
         };
-        viewBox.left = Math.round(tagpro.viewPort.source.x / tagpro.zoom) * tagpro.zoom - a.x * tagpro.zoom + e;
-        viewBox.top = Math.round(tagpro.viewPort.source.y / tagpro.zoom) * tagpro.zoom - a.y * tagpro.zoom + e;
-        viewBox.right = Math.round(tagpro.viewPort.source.x / tagpro.zoom) * tagpro.zoom + a.x * tagpro.zoom + e;
-        viewBox.bottom = Math.round(tagpro.viewPort.source.y / tagpro.zoom) * tagpro.zoom + a.y * tagpro.zoom + e;
+        viewBox.left = Math.round(tagpro.viewPortDiv.source.x / tagpro.zoom) * tagpro.zoom - a.x * tagpro.zoom + e;
+        viewBox.top = Math.round(tagpro.viewPortDiv.source.y / tagpro.zoom) * tagpro.zoom - a.y * tagpro.zoom + e;
+        viewBox.right = Math.round(tagpro.viewPortDiv.source.x / tagpro.zoom) * tagpro.zoom + a.x * tagpro.zoom + e;
+        viewBox.bottom = Math.round(tagpro.viewPortDiv.source.y / tagpro.zoom) * tagpro.zoom + a.y * tagpro.zoom + e;
         viewBox.leftClip = 0; viewBox.topClip = 0; viewBox.rightClip = 0; viewBox.bottomClip = 0;
         viewBox.left < 0 && (viewBox.leftClip = -viewBox.left);
         viewBox.top < 0 && (viewBox.topClip = -viewBox.top);
@@ -143,7 +143,7 @@ tagpro.ready(function () {
     tagpro.events.register({
         drawPlayer: function (player, context, drawPos, TILESIZE) {
             
-            if (tagpro.viewPort.source == player) {
+            if (tagpro.viewPortDiv.source == player) {
                 offset.x = drawPos.x - player.x;
                 offset.y = drawPos.y - player.y;
             }
